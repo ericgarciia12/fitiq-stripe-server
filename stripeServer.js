@@ -1,11 +1,9 @@
 require('dotenv').config({ path: __dirname + '/.env' });
-console.log('🧪 STRIPE_SECRET_KEY in memory:', process.env.STRIPE_SECRET_KEY || 'MISSING');
-console.log("🔑 Stripe Key:", process.env.STRIPE_SECRET_KEY);
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-console.log('🔐 Using Stripe Key:', process.env.STRIPE_SECRET_KEY?.slice(0, 10)); // don't print full key!
+
 
 
 const app = express();
