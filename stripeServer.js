@@ -37,6 +37,51 @@ app.post('/create-subscription', async (req, res) => {
       });
       console.log('✅ Created new customer:', customer.id);
     }
+// ✅ New route: Verify subscription status
+app.post('/check-subscription-status', async (req, res) => {
+  const { customerId } = req.body;
+
+  try {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'all',
+      limit: 1,
+    });
+
+    if (!subscriptions.data || subscriptions.data.length === 0) {
+      return res.status(404).json({ status: 'not_found' });
+    }
+
+    const sub = subscriptions.data[0];
+
+    if (sub.status === 'active' || sub.status === 'trialing') {
+      return res.json({ status: 'active' });
+    } else {
+      return res.json({ status: sub.status }); // e.g. incomplete, past_due
+    }
+  } catch (err) {
+    console.error('❌ Error checking subscription:', err);
+    res.status(500).json({ error: 'Failed to verify subscription' });
+  }
+});
+
+
+// ✅ Resume membership portal
+app.post('/create-portal-session', async (req, res) => {
+  const { customerId } = req.body;
+
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: 'fitiq://', // you can also use a fallback like 'https://fitiq.app/resume-complete'
+    });
+
+    res.send({ url: session.url });
+  } catch (err) {
+    console.error('❌ Failed to create portal session:', err.message);
+    res.status(500).send({ error: 'Unable to create portal session' });
+  }
+});
 
     // 2. Create subscription with free trial and SetupIntent
 // ✅ Existing subscription logic (you already have this)
